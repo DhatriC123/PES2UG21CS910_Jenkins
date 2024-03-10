@@ -5,18 +5,8 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    // Assume 'YOUR_SRN' is a placeholder for your actual project name
-                    def projectName = 'YOUR_SRN'
-                    def cppFileName = 'your_cpp_file.cpp'
-                    def compileCommand = "g++ -o ${projectName} ${cppFileName}"
-                    
-                    // Compile the .cpp file using a shell script
-                    sh script: compileCommand, returnStatus: true
-
-                    // Check if the compilation was successful
-                    if (currentBuild.resultIsBetterOrEqualTo('FAILURE')) {
-                        error "Build failed: Compilation error"
-                    }
+                    // Compile the .cpp file
+                    sh 'g++ -o YOUR_SRN-1 your_cpp_file.cpp'
                 }
             }
         }
@@ -24,25 +14,25 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    // Assume 'YOUR_SRN' is a placeholder for your actual project name
-                    def projectName = 'YOUR_SRN'
-                    def testCommand = "./${projectName}"
-
-                    // Print the output of the .cpp file using a shell script
-                    sh script: testCommand, returnStatus: true
-
-                    // Check if the test was successful
-                    if (currentBuild.resultIsBetterOrEqualTo('FAILURE')) {
-                        error "Test failed: Check your code and try again"
-                    }
+                    // Run the compiled executable
+                    sh './YOUR_SRN-1'
                 }
             }
         }
 
         stage('Deploy') {
             steps {
-                // Add deployment steps here if needed
-                echo "Deployment steps go here"
+                script {
+                    // Create a new working .cpp file
+                    writeFile file: 'new_cpp_file.cpp', text: '#include <iostream>\n\nint main() {\n    std::cout << "Hello, World!" << std::endl;\n    return 0;\n}'
+
+                    // Commit and push the new file to the repository
+                    sh 'git config --global user.email "you@example.com"'
+                    sh 'git config --global user.name "Your Name"'
+                    sh 'git add new_cpp_file.cpp'
+                    sh 'git commit -m "Add new_cpp_file.cpp"'
+                    sh 'git push <your_repo_url> master'
+                }
             }
         }
     }
